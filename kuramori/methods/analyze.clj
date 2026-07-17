@@ -157,7 +157,7 @@
        "battery charge-needed: " (get-in res [:battery :charge-needed]) "\n"))
 
 (defn -main [& args]
-  (let [path (or (first args) "20-actors/kuramori/data/warehouse.edn")
+  (let [path (or (first args) "data/warehouse.edn")
         seed (load-seed path)
         res (run-day seed)]
     (print (report-str res))

@@ -5,13 +5,13 @@
 ;; this actor's tree and runs it via clojure.test — this actor had test suites but no
 ;; runner wired up (vitals reflex was reading as :absent).
 ;;
-;;   bb 20-actors/kuramori/run_tests.clj      ; run from anywhere
+;;   bb run_tests.clj
 (require '[babashka.classpath :as cp]
          '[babashka.fs :as fs]
          '[clojure.test :as t])
 
-;; this file is 20-actors/kuramori/run_tests.clj -> classpath root is its grandparent (20-actors/)
-(cp/add-classpath (str (fs/parent (fs/parent (fs/absolutize *file*)))))
+;; The standalone repository root is the namespace classpath root.
+(cp/add-classpath (str (fs/parent (fs/absolutize *file*))))
 
 (def suites
   '[kuramori.methods.test-kuramori])

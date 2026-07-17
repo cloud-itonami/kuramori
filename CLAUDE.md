@@ -42,7 +42,7 @@ from Python). Methods are pure (no deps) → run under both `bb` and the kotoba 
 ## Layout
 
 ```
-20-actors/kuramori/
+com-etzhayyim-kuramori/
 ├── CLAUDE.md                       # this file
 ├── manifest.edn                    # actor manifest (5 cells, 8 gates, Clojure methods)
 ├── data/
@@ -63,9 +63,9 @@ from Python). Methods are pure (no deps) → run under both `bb` and the kotoba 
 
 ```bash
 # from repo root (classpath = 20-actors, ns = kuramori.methods.*)
-bb --classpath 20-actors 20-actors/kuramori/methods/test_kuramori.clj   # 15 green
-bb --classpath 20-actors -m kuramori.methods.analyze                    # → report
-bb --classpath 20-actors -m kuramori.methods.datom-emit                 # → EAVT Datom log
+bb run_tests.clj                                                        # full suite
+bb --classpath . -m kuramori.methods.analyze                            # → report
+bb --classpath . -m kuramori.methods.datom-emit                         # → EAVT Datom log
 ```
 
 ## Why niyaku's core is reused, not reinvented

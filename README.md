@@ -14,9 +14,9 @@ in babashka-runnable Clojure (pure, no deps → also kotoba-pywasm-portable).
 ## Run
 
 ```bash
-bb --classpath 20-actors 20-actors/kuramori/methods/test_kuramori.clj   # 15 tests / 43 assertions
-bb --classpath 20-actors -m kuramori.methods.analyze                    # → warehouse R0 report
-bb --classpath 20-actors -m kuramori.methods.datom-emit                 # → kotoba EAVT Datom log
+bb run_tests.clj                                                        # 45 tests / 169 assertions
+bb --classpath . -m kuramori.methods.analyze                            # → warehouse R0 report
+bb --classpath . -m kuramori.methods.datom-emit                         # → kotoba EAVT Datom log
 ```
 
 ## What it does

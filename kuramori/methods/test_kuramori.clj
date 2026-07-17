@@ -1,5 +1,5 @@
 ;; kuramori 倉守 — test suite (clojure.test, babashka-runnable).
-;; Run: bb --classpath 20-actors 20-actors/kuramori/methods/test_kuramori.clj
+;; Run: bb run_tests.clj
 ;; Per ADR-2606142000 (kuramori R0).
 (ns kuramori.methods.test-kuramori
   (:require [clojure.test :refer [deftest is testing run-tests]]
@@ -114,7 +114,7 @@
       (is (pos? d)))))
 
 ;; ── analyze + datom_emit (end-to-end over the seed) ──────────────────────────
-(def seed (az/load-seed "20-actors/kuramori/data/warehouse.edn"))
+(def seed (az/load-seed "data/warehouse.edn"))
 
 (deftest analyze-end-to-end
   (let [res (az/run seed)]

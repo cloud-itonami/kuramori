@@ -1,0 +1,11 @@
+{:schema-version 1
+ :repository "etzhayyim/com-etzhayyim-kuramori"
+ :classification :actor
+ :canonical-actor-metadata "manifest.edn"
+ :canonical-data-format :edn
+ :actor-owned-contracts ["lex/moveAttestation.edn"]
+ :dependencies []
+ :external-wire-formats #{}
+ :tests {:command ["bb" "run_tests.clj"]
+         :count 45
+         :assertions 169}}
