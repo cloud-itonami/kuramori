@@ -1,0 +1,56 @@
+;; kuramori 倉守 — actor manifest (Gen-3 kotoba-native, Clojure-first)
+;; Warehouse intralogistics robotics — AGV/AMR transport + slotting + putaway/picking
+;; ADR-2606142000 (R0 scaffold) · 2026-06-14
+{:actor/id        "kuramori"
+ :actor/glyph     "倉守"
+ :actor/tier      :tier-b
+ :actor/integrates ["niyaku" "tazuna" "todoke"]
+ :actor/domain    "kuramori.etzhayyim.com"
+ :actor/purpose   "Warehouse intralogistics robotics — the standalone warehouse-handling body the roster GAP-mapped to `kuramori 倉守` (ADR-2606073001 §3, 積み下ろし partial). Closes the warehouse leg between niyaku 荷役 (port quay↔yard) and todoke 届け (last-mile): AGV (fixed guidepath) + AMR (free-roaming) horizontal transport, ABC velocity-based slotting (golden-zone packing), putaway feasibility (weight/temp/hazmat-segregated), and pick-route + fleet dispatch (LPT makespan). Reuses niyaku's PROVEN trapezoidal-profile + segment-conflict + LPT-dispatch core (ADR-2606082000). Displacement-Dividend-coupled (倉庫作業員, ADR-2606032130); tazuna-teleoperable (ADR-2606042100)."
+ :actor/status    :r0
+ :actor/adr       "2606142000"
+ :actor/related   ["2606082000" "2606042300" "2606073001" "2606032130" "2606042100" "2605215000"]
+
+ :actor/charter-rider
+ {:rider/version "3.1"
+  :rider/applied true}
+
+ :actor/gates
+ [{:gate/id "G1" :gate/name "design-sim-only"        :gate/rule "R0 = pure planning compute + sim; moves no real robot. Real actuation is Council Lv6+/operator-gated R1 (no-server-key)"}
+  {:gate/id "G2" :gate/name "zero-emission"          :gate/rule "Electric AGV/AMR only; regenerative braking credited; opportunity-charge gate keeps SoC above reserve floor (no LPG/diesel forklifts)"}
+  {:gate/id "G3" :gate/name "no-worker-surveillance" :gate/rule "KPI is throughput / moves-per-hour (equipment), never per-picker pace or biometric tracking (§1.13, mirrors niyaku G11/G14)"}
+  {:gate/id "G4" :gate/name "dividend-coupled"       :gate/rule "Warehouse-labour displacement is coupled to a funded Displacement-Dividend cohort (ADR-2606032130 G2); no live displacement without it"}
+  {:gate/id "G5" :gate/name "shared-zone-safety"     :gate/rule "A robot in a human-shared zone is hard-capped at shared-zone speed; the cap is not tunable up by a planner (collaborative-safety envelope)"}
+  {:gate/id "G6" :gate/name "murakumo-only"          :gate/rule "Inference/narration is Murakumo-only (LiteLLM 127.0.0.1:4000); external LLM prohibited (ADR-2605215000)"}
+  {:gate/id "G7" :gate/name "hazmat-segregation"     :gate/rule "Putaway enforces weight-on-shelf, temperature class, and hazmat segregation; an infeasible putaway RAISES (never silently forced)"}
+  {:gate/id "G8" :gate/name "tazuna-operated"        :gate/rule "Remote operation/teleop is via tazuna 手綱 (ADR-2606042100); weaponizable use unrepresentable"}
+  {:gate/id "G9"  :gate/name "atomic-order-capacity" :gate/rule "Batch-pick consolidation never splits a customer order across carts; an order whose pick count exceeds a wave's capacity RAISES (no silent split), mirroring niyaku's no-rehandle discipline"}
+  {:gate/id "G10" :gate/name "handoff-provenance"    :gate/rule "Every cross-actor handoff 縁 (niyaku→kuramori→todoke) names both a source and destination actor; an orphan/unattributed handoff RAISES (no unprovenance chain edge)"}]
+
+ :actor/methods
+ [{:method/id "agv_amr"     :method/lang :clojure :method/pure true :method/desc "AGV/AMR motion+dispatch+battery: trapezoidal travel-time, one-way segment-conflict (AGV), shared-zone yield (AMR/G5), SoC opportunity-charge gate (G2), LPT makespan dispatch. Ports niyaku agv_transfer semantics."}
+  {:method/id "slotting"    :method/lang :clojure :method/pure true :method/desc "ABC velocity classing + golden-zone slotting + putaway feasibility (weight/temp/hazmat, G7 raises) + nearest-neighbour pick-route"}
+  {:method/id "picking"     :method/lang :clojure :method/pure true :method/desc "Multi-order batch-picking consolidation (FFD wave packing under tote-cart capacity, G9 atomic-order raise) + concurrent zone-occupancy congestion detection + overflow stagger"}
+  {:method/id "handoff"     :method/lang :clojure :method/pure true :method/desc "Cross-actor handoff 縁 in the Datom log: niyaku→kuramori inbound putaway + kuramori→todoke outbound delivery; provenance gate (G10 raises on orphan handoff); emits :handoff/* EAVT edges"}
+  {:method/id "replenish"   :method/lang :clojure :method/pure true :method/desc "Forward-pick replenishment from bulk/reserve: finds forward slots below min, pairs each with a matching-SKU bulk source, refills toward max = round-down(min(max-qty, bulk-available)) to a case-pack quantum; no-phantom-replenishment gate RAISES on a hard stockout (SKU absent from all bulk)"}
+  {:method/id "packing"     :method/lang :clojure :method/pure true :method/desc "Cartonization: pack picked items into shipping cartons under volume+weight bounds — choose the SMALLEST single carton type that holds Σvol AND Σweight, else FFD-split items across multiple largest-type cartons; no-phantom-pack gate RAISES when a single item exceeds the largest carton (unpackable, never wedged or dropped)"}
+  {:method/id "returns"     :method/lang :clojure :method/pure true :method/desc "Reverse logistics: disposition a returned item by condition grade (≥4 restock / 2-3 refurbish / 1 scrap) + process-returns folds a seq into the three buckets plus a restock-plan; no-blind-restock gate RAISES on a return missing its condition-grade (an ungraded return must be inspected, never silently waved back onto the pick face)"}
+  {:method/id "cyclecount"  :method/lang :clojure :method/pure true :method/desc "In-aisle cycle-count / inventory audit: count-frequency = counts-per-period by ABC class (A most frequent, C least — focuses audit on fast movers) + reconcile compares :expected vs :counted per slot → mismatched-only discrepancy list (signed delta) + record accuracy = matching/total in [0,1]; G3-aligned (an inventory metric, never per-picker pace)"}
+  {:method/id "analyze"     :method/lang :clojure :method/pure true :method/desc "End-to-end R0 orchestrator: load seed → slot → pick-route → fleet dispatch → battery gate → report map"}
+  {:method/id "datom_emit"  :method/lang :clojure :method/pure true :method/desc "kotoba EAVT Datom-log emitter (:wh.zone/* :wh.slot/* :wh.sku/* :wh.robot/* + :slotted-in 縁 GROUND; :bond/* DERIVED transient)"}
+  {:method/id "coverage"     :method/lang :clojure :method/pure true :method/desc "HONEST occupation sub-task coverage map (asobi/shiori G5 sourcing-honesty): all 12/12 warehouse sub-tasks now covered by existing methods (agv_amr/slotting/picking/handoff/replenish/packing/returns/cyclecount) — coverage 100%; the module MEASURES coverage rather than asserting it (gaps, if any, are named)"}]
+
+ :actor/cells
+ [{:cell/id "putaway"        :cell/kind :planning :cell/runtime :wasm :cell/layer "L0" :cell/method "slotting"}
+  {:cell/id "slotting"       :cell/kind :planning :cell/runtime :wasm :cell/layer "L1" :cell/method "slotting"}
+  {:cell/id "pick_route"     :cell/kind :planning :cell/runtime :wasm :cell/layer "L2" :cell/method "slotting"}
+  {:cell/id "fleet_dispatch" :cell/kind :planning :cell/runtime :wasm :cell/layer "L3" :cell/method "agv_amr"}
+  {:cell/id "datom_emit"     :cell/kind :projection :cell/runtime :wasm :cell/layer "terminal" :cell/method "datom_emit"}]
+
+ :actor/reference-equipment
+ {:agv/class "battery tunnel/tugger AGV (fixed guidepath)"
+  :amr/class "free-roaming autonomous mobile robot (warehouse floor)"
+  :amr/v-max-mps 1.5
+  :shared-zone-cap-mps 1.5
+  :charger "opportunity charging; SoC reserve floor 15%"
+  :facility/ref "dc-ref-01 (mixed-temperature distribution centre, reference)"}}

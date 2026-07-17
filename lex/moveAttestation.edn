@@ -1,0 +1,29 @@
+;; com.etzhayyim.kuramori.moveAttestation — lexicon (EDN form)
+;; ADR-2606142000 · per-move warehouse intralogistics handling attestation
+{:lexicon 1
+ :id "com.etzhayyim.kuramori.moveAttestation"
+ :defs
+ {:main
+  {:type "record"
+   :key "tid"
+   :record
+   {:type "object"
+    :required ["moveId" "skuId" "facilityId" "robotId" "fromLoc" "toLoc" "kind"]
+    :properties
+    {:moveId {:type "string" :description "unique handling-move identifier"}
+     :skuId {:type "string" :description "stock-keeping unit / tote / pallet id"}
+     :facilityId {:type "string" :description "distribution-centre id"}
+     :robotId {:type "string" :description "AGV/AMR DID performing the move"}
+     :robotKind {:type "string" :description "agv (fixed guidepath) | amr (free-roaming)"}
+     :kind {:type "string" :description "putaway | replenish | pick | return"}
+     :fromLoc {:type "string" :description "origin slot or dock address"}
+     :toLoc {:type "string" :description "destination slot or dispatch address"}
+     :distanceM {:type "number" :description "leg distance (m)"}
+     :sharedZone {:type "boolean" :description "leg crossed a human-shared zone (speed-capped per G5)"}
+     :socBefore {:type "number" :description "battery state-of-charge before the leg (0..1)"}
+     :socAfter {:type "number" :description "battery state-of-charge after the leg (0..1)"}
+     :chargeRouted {:type "boolean" :description "vehicle routed to charger before the leg (G2 reserve-floor gate)"}
+     :energyKwh {:type "number" :description "net electric energy for the move (regen-credited, G2)"}
+     :hazmatClass {:type "string" :description "hazmat class if dangerous goods (segregation per G7)"}
+     :tempClass {:type "string" :description "ambient | reefer | frozen (zone match per G7)"}
+     :timestamp {:type "string" :description "ISO-8601 attestation time"}}}}}}
