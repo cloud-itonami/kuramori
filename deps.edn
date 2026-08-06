@@ -1,0 +1,43 @@
+{:paths ["src"]
+ ;; langgraph brings langchain transitively (both zero-/single-dep, all .cljc ->
+ ;; portable to JVM / SCI / ClojureScript / GraalVM). It lives in the kotoba-lang
+ ;; org of this workspace.
+ ;;
+ ;; Unlike `cloud-itonami-isic-4920` (which wraps the pre-existing capability
+ ;; library `kotoba-lang/logistics`), kuramori's capability library is its OWN
+ ;; `kuramori.methods.*` tree: the AGV/AMR motion + battery + segment-conflict
+ ;; core (`agv-amr`), the slotting/putaway feasibility core (`slotting`), and the
+ ;; batch/congestion core (`picking`) were authored and test-covered here before
+ ;; the actor layer existed. `kuramori.governor` therefore delegates its physical
+ ;; checks to those already-validated pure functions rather than re-deriving the
+ ;; physics -- the same 'reuse a capability library's own validated function'
+ ;; discipline `terminal.governor` (isic-5210) applies to `terminal.registry`.
+ ;;
+ ;; This repo is standalone (forkable outside the workspace); the :local/root
+ ;; paths only resolve inside the monorepo checkout -- a standalone fork should
+ ;; override them with git coordinates.
+ :deps {io.github.kotoba-lang/langgraph
+        {:local/root "../../kotoba-lang/langgraph"}
+        io.github.kotoba-lang/langchain-store
+        {:local/root "../../kotoba-lang/langchain-store"}}
+ :aliases
+ {;; offline workspace dev -- pin transitive langchain to local checkout
+  :dev {:override-deps
+        {io.github.kotoba-lang/langchain
+         {:local/root "../../kotoba-lang/langchain"}}}
+  ;; clojure -M:dev:run  -> drive the R0 warehouse demo through one OperationActor
+  :run {:main-opts ["-m" "kuramori.sim"]}
+  ;; clojure -M:analyze -> the pre-existing end-to-end planning report
+  :analyze {:main-opts ["-m" "kuramori.methods.analyze"]}
+  ;; clojure -M:datom-emit -> kotoba EAVT Datom log
+  :datom-emit {:main-opts ["-m" "kuramori.methods.datom-emit"]}
+  :test {:extra-paths ["test"]
+         :extra-deps {io.github.cognitect-labs/test-runner
+                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts ["-m" "cognitect.test-runner"]
+         :exec-fn cognitect.test-runner.api/test}
+  ;; static analysis -- clj-kondo from deps (no binary), errors fail CI.
+  :lint {:replace-deps {clj-kondo/clj-kondo {:mvn/version "2024.11.14"}}
+         :main-opts    ["-m" "clj-kondo.main"
+                        "--lint" "src" "test"
+                        "--fail-level" "error"]}}}

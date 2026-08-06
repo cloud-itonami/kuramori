@@ -1,0 +1,97 @@
+(ns kuramori.store-contract-test
+  "The Store contract every backend must satisfy. Today there is one
+  backend (MemStore); the contract exists so a second one cannot quietly
+  differ. The invariant that matters most is that the ledger is
+  APPEND-ONLY -- an audit trail you can rewrite is not an audit trail."
+  (:require [clojure.test :refer [deftest testing is]]
+            [kuramori.store :as store]))
+
+(defn- fresh [] (store/seed-db))
+
+(deftest seeded-floors-are-readable
+  (let [db (fresh)]
+    (is (= "floor-1" (:id (store/floor db "floor-1"))))
+    (is (= 6 (count (store/all-floors db))))
+    (is (nil? (store/floor db "nope")))
+    (testing "all-floors is deterministically ordered"
+      (is (= (sort (map :id (store/all-floors db)))
+             (map :id (store/all-floors db)))))))
+
+(deftest ledger-is-append-only
+  (let [db (fresh)]
+    (is (empty? (store/ledger db)))
+    (store/append-ledger! db {:t :a})
+    (store/append-ledger! db {:t :b})
+    (store/append-ledger! db {:t :c})
+    (is (= [:a :b :c] (mapv :t (store/ledger db))))
+    (testing "appending never rewrites an earlier entry"
+      (store/append-ledger! db {:t :d})
+      (is (= [:a :b :c :d] (mapv :t (store/ledger db)))))))
+
+(deftest upsert-merges-rather-than-replaces
+  (let [db (fresh)]
+    (store/commit-record! db {:effect :floor/upsert
+                              :path ["floor-1"]
+                              :value {:id "floor-1" :floor-code "DC-RENAMED"}})
+    (let [f (store/floor db "floor-1")]
+      (is (= "DC-RENAMED" (:floor-code f)))
+      (testing "fields not in the patch survive"
+        (is (= "JPN" (:jurisdiction f)))
+        (is (true? (:actuation-authorised? f)))))))
+
+(deftest assessment-and-plan-round-trip
+  (let [db (fresh)]
+    (is (nil? (store/assessment-of db "floor-1")))
+    (store/commit-record! db {:effect :commissioning-assessment/set
+                              :path ["floor-1"]
+                              :payload {:checklist #{:risk-assessment}}})
+    (is (= #{:risk-assessment} (:checklist (store/assessment-of db "floor-1"))))
+    (is (nil? (store/plan-of db "floor-1")))
+    (store/commit-record! db {:effect :plan/set
+                              :path ["floor-1"]
+                              :payload {:placement {"sku-1" "slot-1"}}})
+    (is (= {"sku-1" "slot-1"} (:placement (store/plan-of db "floor-1"))))))
+
+(deftest double-actuation-guards-are-dedicated-booleans
+  (testing "the guards read a dedicated boolean, never a :status value
+            (the discipline informed by isic-6492's status-lifecycle bug)"
+    (let [db (fresh)]
+      (is (false? (store/floor-already-dispatched? db "floor-1")))
+      (is (false? (store/floor-already-putaway-committed? db "floor-1")))
+      (store/commit-record! db {:effect :floor/mark-dispatched
+                                :path ["floor-1"] :payload {:makespan 12.0}})
+      (is (true? (store/floor-already-dispatched? db "floor-1")))
+      (testing "the two actuations are INDEPENDENT -- dispatching does not
+                mark putaway committed"
+        (is (false? (store/floor-already-putaway-committed? db "floor-1"))))
+      (store/commit-record! db {:effect :floor/mark-putaway-committed
+                                :path ["floor-1"] :payload {:placements []}})
+      (is (true? (store/floor-already-putaway-committed? db "floor-1")))
+      (testing "changing :status alone must NOT flip a guard"
+        (store/commit-record! db {:effect :floor/upsert
+                                  :path ["floor-2"]
+                                  :value {:id "floor-2" :status :dispatched}})
+        (is (false? (store/floor-already-dispatched? db "floor-2")))))))
+
+(deftest actuation-histories-are-append-only
+  (let [db (fresh)]
+    (is (empty? (store/dispatch-history db)))
+    (is (empty? (store/putaway-history db)))
+    (store/commit-record! db {:effect :floor/mark-dispatched
+                              :path ["floor-1"] :payload {:makespan 12.0}})
+    (store/commit-record! db {:effect :floor/mark-dispatched
+                              :path ["floor-2"] :payload {:makespan 7.0}})
+    (is (= ["floor-1" "floor-2"] (mapv :floor-id (store/dispatch-history db))))
+    (is (= ["JPN" "ATL"] (mapv :jurisdiction (store/dispatch-history db))))))
+
+(deftest unknown-effect-is-a-noop-not-a-crash
+  (let [db (fresh)
+        before (store/all-floors db)]
+    (store/commit-record! db {:effect :not/a-real-effect :path ["floor-1"] :payload {}})
+    (is (= before (store/all-floors db)))))
+
+(deftest empty-db-seeds-cleanly
+  (let [db (store/empty-db)]
+    (is (empty? (store/all-floors db)))
+    (store/with-floors db {"f" {:id "f" :jurisdiction "JPN"}})
+    (is (= ["f"] (mapv :id (store/all-floors db))))))

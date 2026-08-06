@@ -1,11 +1,18 @@
 {:schema-version 1
- :repository "etzhayyim/com-etzhayyim-kuramori"
+ :repository "cloud-itonami/kuramori"
  :classification :actor
  :canonical-actor-metadata "manifest.edn"
  :canonical-data-format :edn
  :actor-owned-contracts ["lex/moveAttestation.edn"]
- :dependencies []
+ ;; The actor layer (governor/phase/store/operation) runs on langgraph;
+ ;; the capability library (kuramori.methods.*) stays dependency-free.
+ :dependencies ["io.github.kotoba-lang/langgraph"
+                "io.github.kotoba-lang/langchain-store"]
  :external-wire-formats #{}
- :tests {:command ["bb" "run_tests.clj"]
-         :count 45
-         :assertions 169}}
+ ;; bb is retired as this workspace's script host (ADR-2607173000);
+ ;; `run_tests.clj` was removed with the move to the standard src/ + test/
+ ;; layout and the cognitect test-runner.
+ :tests {:command ["clojure" "-M:dev:test"]
+         :count 83
+         :assertions 352}
+ :components #{:facts :governor :phase :sim :store :operation}}

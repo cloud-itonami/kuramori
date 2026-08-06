@@ -13,10 +13,21 @@ covers the quay, nothing covered the warehouse floor). It closes the leg between
 velocity-based slotting, putaway feasibility, and pick-route + fleet dispatch.
 
 **Clojure-first.** kuramori is the reference actor for the Clojure-first GAP-actor wave —
-the first actor whose methods are authored directly in babashka-runnable Clojure (not ported
-from Python). Methods are pure (no deps) → run under both `bb` and the kotoba pywasm runtime.
+the first actor whose methods were authored directly in Clojure (not ported from Python).
+The methods under `src/kuramori/methods/` remain **pure and dependency-free**, which is
+what makes them portable and what lets `kuramori.governor` call them directly. Only the
+actor layer takes deps (langgraph). The original wording said "babashka-runnable"; `bb` is
+retired as this workspace's script host (ADR-2607173000), so the property that still holds
+is *dependency-free*, not *bb-runnable*.
 
 ## Hard gates (constitutional — read before any change)
+
+**Since docs/adr/0001 (2026-08-06) these are no longer prose only.** G1/G2/G3/G4/G5/G7
+are enforced as named, refusable rules in `kuramori.governor`, which delegates every
+physical check to this repo's own validated pure functions rather than re-deriving them.
+G6 and G8 remain platform-layer concerns and are deliberately NOT claimed as governor
+rules — see the ADR. If you change a gate below, change the corresponding rule and its
+test, and confirm the test goes red when you break the rule.
 
 - **G1 — design + sim only.** R0 is pure planning compute; it moves no real robot. Real
   actuation is Council Lv6+/operator-gated R1 (no-server-key). The methods never touch a
@@ -42,31 +53,47 @@ from Python). Methods are pure (no deps) → run under both `bb` and the kotoba 
 ## Layout
 
 ```
-com-etzhayyim-kuramori/
+kuramori/
 ├── CLAUDE.md                       # this file
+├── deps.edn                        # langgraph + langchain-store; :dev :run :test :lint
 ├── manifest.edn                    # actor manifest (5 cells, 8 gates, Clojure methods)
-├── data/
-│   └── warehouse.edn               # reference mixed-temperature DC seed (:representative)
-├── methods/                        # pure Clojure → bb-runnable AND kotoba-pywasm-portable
-│   ├── agv_amr.clj                 # AGV/AMR motion + dispatch + battery (ports niyaku)
-│   ├── slotting.clj                # ABC slotting + putaway feasibility + pick-route
-│   ├── picking.clj                 # multi-order batch consolidation (G9) + congestion (R1)
-│   ├── handoff.clj                 # cross-actor chain 縁 niyaku→kuramori→todoke (G10, R1)
-│   ├── analyze.clj                 # end-to-end R0 orchestrator
-│   ├── datom_emit.clj              # kotoba EAVT Datom-log emitter (canonical state)
-│   └── test_kuramori.clj           # 15 tests / 43 assertions (clojure.test)
-└── lex/
-    └── moveAttestation.edn         # per-move warehouse handling attestation lexicon
+├── docs/adr/0001-…                 # why the actor layer exists; its honest limits
+├── data/warehouse.edn              # reference mixed-temperature DC seed (:representative)
+├── lex/moveAttestation.edn         # per-move warehouse handling attestation lexicon
+├── src/kuramori/
+│   ├── facts.cljc                  # per-jurisdiction spec-basis catalog (7 jurisdictions)
+│   ├── warehouseadvisor.cljc       # sealed advisor — proposals only, never commits
+│   ├── governor.cljc               # independent censor — 10 HARD rules + 2 guards
+│   ├── phase.cljc                  # 0→3 rollout; actuation never auto-eligible
+│   ├── store.cljc                  # Store protocol + MemStore, append-only ledger
+│   ├── operation.cljc              # langgraph StateGraph (intake→advise→govern→decide)
+│   ├── sim.cljc                    # demo driver — walks every refusal
+│   └── methods/                    # the capability library: pure Clojure, no deps
+│       ├── agv_amr.clj             # AGV/AMR motion + dispatch + battery (ports niyaku)
+│       ├── slotting.clj            # ABC slotting + putaway feasibility + pick-route
+│       ├── picking.clj             # multi-order batch consolidation (G9) + congestion (R1)
+│       ├── handoff.clj             # cross-actor chain 縁 (G10, R1)
+│       ├── analyze.clj             # end-to-end R0 orchestrator
+│       └── datom_emit.clj          # kotoba EAVT Datom-log emitter (canonical state)
+└── test/kuramori/
+    ├── methods_test.clj            # the capability library's own suite
+    ├── governor_test.clj           # the refusal demonstration
+    ├── phase_test.clj              # actuation is never auto-eligible, at any phase
+    ├── facts_test.clj              # unknown jurisdiction yields NOTHING
+    └── store_contract_test.clj     # ledger is append-only; guards are dedicated booleans
 ```
 
 ## Run
 
 ```bash
-# from repo root (classpath = 20-actors, ns = kuramori.methods.*)
-bb run_tests.clj                                                        # full suite
-bb --classpath . -m kuramori.methods.analyze                            # → report
-bb --classpath . -m kuramori.methods.datom-emit                         # → EAVT Datom log
+clojure -M:dev:test      # 83 tests / 352 assertions
+clojure -M:dev:run       # the governed actor demo — every refusal, in the ledger
+clojure -M:analyze       # → R0 planning report (capability library only)
+clojure -M:datom-emit    # → EAVT Datom log
 ```
+
+**`bb` is retired** as this workspace's script host (ADR-2607173000); `run_tests.clj`
+was removed with the move to the standard `src/` + `test/` layout.
 
 ## Why niyaku's core is reused, not reinvented
 
