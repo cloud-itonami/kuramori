@@ -1,8 +1,8 @@
 ;; kuramori 倉守 — test suite (clojure.test, babashka-runnable).
-;; Run: bb run_tests.clj
+;; Run: clojure -M:dev:test
 ;; Per ADR-2606142000 (kuramori R0).
-(ns kuramori.methods.test-kuramori
-  (:require [clojure.test :refer [deftest is testing run-tests]]
+(ns kuramori.methods-test
+  (:require [clojure.test :refer [deftest is testing]]
             [clojure.string :as str]
             [kuramori.methods.agv-amr :as fleet]
             [kuramori.methods.slotting :as slot]
@@ -465,6 +465,8 @@
       (is (> (count (clojure.edn/read-string out))
              (count (clojure.edn/read-string (de/emit seed day 1))))))))
 
-(when (= *file* (System/getProperty "babashka.file"))
-  (let [{:keys [fail error]} (run-tests 'kuramori.methods.test-kuramori)]
-    (System/exit (if (pos? (+ fail error)) 1 0))))
+;; Discovered and run by `clojure -M:dev:test` (cognitect test-runner, which
+;; picks up every `*-test` namespace under test/). The old bb self-invoking
+;; tail was removed with `run_tests.clj` -- bb is retired as this workspace's
+;; script host, and a suite that runs itself on load cannot be composed with
+;; the other suites.

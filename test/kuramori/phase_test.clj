@@ -1,0 +1,64 @@
+(ns kuramori.phase-test
+  "The phase gate is the SECOND independent layer that refuses. Its most
+  important property is negative: `:fleet/dispatch` and `:putaway/commit`
+  are never auto-eligible at ANY phase, including the highest. That is a
+  structural invariant, not a rollout milestone -- so it is pinned here
+  by enumeration over every phase, and will fail loudly if someone adds
+  either op to an `:auto` set."
+  (:require [clojure.test :refer [deftest testing is]]
+            [kuramori.phase :as phase]))
+
+(deftest actuation-is-never-auto-eligible-at-any-phase
+  (doseq [[p {:keys [auto label]}] phase/phases]
+    (testing (str "phase " p " (" label ")")
+      (is (not (contains? auto :fleet/dispatch)))
+      (is (not (contains? auto :putaway/commit))))))
+
+(deftest a-governor-hold-always-stays-hold
+  (doseq [p (keys phase/phases)
+          op phase/write-ops]
+    (is (= :hold (:disposition (phase/gate p {:op op} :hold)))
+        (str "phase " p " op " op " must not soften a governor HOLD"))))
+
+(deftest a-write-not-enabled-in-this-phase-holds
+  (testing "phase 0 writes nothing"
+    (doseq [op phase/write-ops]
+      (let [{:keys [disposition reason]} (phase/gate 0 {:op op} :commit)]
+        (is (= :hold disposition))
+        (is (= :phase-disabled reason)))))
+  (testing "phase 1 enables only :floor/register as a WRITE"
+    (is (not= :hold (:disposition (phase/gate 1 {:op :floor/register} :commit))))
+    (is (= :hold (:disposition (phase/gate 1 {:op :slotting/plan} :commit))))))
+
+(deftest phase1-register-still-needs-approval
+  (testing "phase 1 allows the write but auto-commits NOTHING (:auto is empty),
+            so even a clean governor verdict escalates to a human"
+    (let [{:keys [disposition reason]} (phase/gate 1 {:op :floor/register} :commit)]
+      (is (= :escalate disposition))
+      (is (= :phase-approval reason)))))
+
+(deftest phase3-auto-commits-only-planning-ops
+  (testing "planning ops auto-commit when the governor is clean"
+    (is (= :commit (:disposition (phase/gate 3 {:op :floor/register} :commit))))
+    (is (= :commit (:disposition (phase/gate 3 {:op :slotting/plan} :commit)))))
+  (testing "both actuation ops escalate even when the governor is clean"
+    (doseq [op [:fleet/dispatch :putaway/commit]]
+      (let [{:keys [disposition reason]} (phase/gate 3 {:op op} :commit)]
+        (is (= :escalate disposition))
+        (is (= :phase-approval reason))))))
+
+(deftest commissioning-assessment-never-auto-commits
+  (testing "asserting that evidence exists is always a human's statement"
+    (let [{:keys [disposition reason]} (phase/gate 3 {:op :commissioning/assess} :commit)]
+      (is (= :escalate disposition))
+      (is (= :phase-approval reason)))))
+
+(deftest verdict-mapping
+  (is (= :hold     (phase/verdict->disposition {:hard? true})))
+  (is (= :escalate (phase/verdict->disposition {:hard? false :escalate? true})))
+  (is (= :commit   (phase/verdict->disposition {:hard? false :escalate? false}))))
+
+(deftest unknown-phase-falls-back-to-default-not-to-permissive
+  (testing "an unrecognised phase must not become 'allow everything'"
+    (let [{:keys [disposition]} (phase/gate 99 {:op :fleet/dispatch} :commit)]
+      (is (= :escalate disposition)))))
