@@ -11,7 +11,7 @@
 ;; Pure Clojure, no deps → babashka-runnable AND kotoba-pywasm-portable.
 ;; Per ADR-2606142000 (kuramori R0).
 (ns kuramori.methods.coverage
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (def sub-tasks
   "The warehouse-intralogistics occupation decomposed into sub-tasks.
