@@ -3,7 +3,7 @@
 ;; Per ADR-2606142000 (kuramori R0).
 (ns kuramori.methods-test
   (:require [clojure.test :refer [deftest is testing]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kuramori.methods.agv-amr :as fleet]
             [kuramori.methods.slotting :as slot]
             [kuramori.methods.analyze :as az]
