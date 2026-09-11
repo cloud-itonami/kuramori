@@ -34,7 +34,7 @@ an artefact. It was true.
 ## Decision
 
 **1. Adopt the standard layout.** `kuramori/` → `src/kuramori/`, the test suite
-→ `test/kuramori/methods_test.clj`, and a `deps.edn` with the usual
+→ `test/kuramori/methods_test.cljk`, and a `deps.edn` with the usual
 `:dev` / `:run` / `:test` / `:lint` aliases. `run_tests.clj` is deleted: `bb` is
 retired as this workspace's script host (ADR-2607173000), and a suite that
 invokes itself on load cannot be composed with sibling suites.
