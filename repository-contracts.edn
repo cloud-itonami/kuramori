@@ -9,10 +9,10 @@
  :dependencies ["io.github.kotoba-lang/langgraph"
                 "io.github.kotoba-lang/langchain-store"]
  :external-wire-formats #{}
- ;; bb is retired as this workspace's script host (ADR-2607173000);
+ ;; kbb -M:is retired as this workspace's script host (ADR-2607173000);
  ;; `run_tests.clj` was removed with the move to the standard src/ + test/
  ;; layout and the cognitect test-runner.
- :tests {:command ["clojure" "-M:dev:test"]
+ :tests {:command ["kbb" "-M:dev:test"]
          :count 83
          :assertions 352}
  :components #{:facts :governor :phase :sim :store :operation}}

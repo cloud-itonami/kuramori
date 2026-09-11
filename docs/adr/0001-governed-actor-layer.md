@@ -77,9 +77,9 @@ Neither layer is load-bearing alone.
 
 ## Verification
 
-- **83 tests / 352 assertions, 0 failures** (`clojure -M:dev:test`), up from
+- **83 tests / 352 assertions, 0 failures** (`kbb -M:dev:test`), up from
   45/169. Pre-existing suite untouched and still green.
-- **The demo actually refuses.** `clojure -M:dev:run` produces nine
+- **The demo actually refuses.** `kbb -M:dev:run` produces nine
   `:governor-hold` ledger entries, each isolating one rule:
   `:no-spec-basis` · `:shared-zone-speed` · `:segment-conflict` ·
   `:worker-surveillance` · `:putaway-infeasible` · `:actuation-not-authorised` ·

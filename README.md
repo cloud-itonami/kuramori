@@ -16,10 +16,10 @@ It closes the warehouse-handling GAP named in ADR-2606073001 §3 (積み下ろ�
 ## Run
 
 ```bash
-clojure -M:dev:test         # 83 tests / 352 assertions
-clojure -M:dev:run          # the governed actor demo — walks every refusal
-clojure -M:analyze          # end-to-end R0 planning report (capability library only)
-clojure -M:datom-emit       # kotoba EAVT Datom log
+kbb -M:dev:test         # 83 tests / 352 assertions
+kbb -M:dev:run          # the governed actor demo — walks every refusal
+kbb -M:analyze          # end-to-end R0 planning report (capability library only)
+kbb -M:datom-emit       # kotoba EAVT Datom log
 ```
 
 ## Two layers
