@@ -1,5 +1,5 @@
 (ns kuramori.sim
-  "Demo driver -- `clojure -M:dev:run`. Walks a clean floor through
+  "Demo driver -- `kbb -M:dev:run`. Walks a clean floor through
   register -> commissioning assessment -> fleet dispatch
   (escalate/approve/commit) -> putaway commit (escalate/approve/commit),
   then shows the HARD-hold scenarios ONE AT A TIME:

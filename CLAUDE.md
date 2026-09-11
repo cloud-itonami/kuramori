@@ -86,10 +86,10 @@ kuramori/
 ## Run
 
 ```bash
-clojure -M:dev:test      # 83 tests / 352 assertions
-clojure -M:dev:run       # the governed actor demo — every refusal, in the ledger
-clojure -M:analyze       # → R0 planning report (capability library only)
-clojure -M:datom-emit    # → EAVT Datom log
+kbb -M:dev:test      # 83 tests / 352 assertions
+kbb -M:dev:run       # the governed actor demo — every refusal, in the ledger
+kbb -M:analyze       # → R0 planning report (capability library only)
+kbb -M:datom-emit    # → EAVT Datom log
 ```
 
 **`bb` is retired** as this workspace's script host (ADR-2607173000); `run_tests.clj`

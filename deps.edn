@@ -30,11 +30,11 @@
   :dev {:override-deps
         {io.github.kotoba-lang/langchain
          {:local/root "../../kotoba-lang/langchain"}}}
-  ;; clojure -M:dev:run  -> drive the R0 warehouse demo through one OperationActor
+  ;; kbb -M:dev:run  -> drive the R0 warehouse demo through one OperationActor
   :run {:main-opts ["-m" "kuramori.sim"]}
-  ;; clojure -M:analyze -> the pre-existing end-to-end planning report
+  ;; kbb -M:analyze -> the pre-existing end-to-end planning report
   :analyze {:main-opts ["-m" "kuramori.methods.analyze"]}
-  ;; clojure -M:datom-emit -> kotoba EAVT Datom log
+  ;; kbb -M:datom-emit -> kotoba EAVT Datom log
   :datom-emit {:main-opts ["-m" "kuramori.methods.datom-emit"]}
   :test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
