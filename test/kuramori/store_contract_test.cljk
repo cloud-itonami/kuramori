@@ -3,7 +3,7 @@
   backend (MemStore); the contract exists so a second one cannot quietly
   differ. The invariant that matters most is that the ledger is
   APPEND-ONLY -- an audit trail you can rewrite is not an audit trail."
-  (:require [clojure.test :refer [deftest testing is]]
+  (:require [kotoba.test :refer [deftest testing is]]
             [kuramori.store :as store]))
 
 (defn- fresh [] (store/seed-db))

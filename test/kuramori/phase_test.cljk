@@ -5,7 +5,7 @@
   structural invariant, not a rollout milestone -- so it is pinned here
   by enumeration over every phase, and will fail loudly if someone adds
   either op to an `:auto` set."
-  (:require [clojure.test :refer [deftest testing is]]
+  (:require [kotoba.test :refer [deftest testing is]]
             [kuramori.phase :as phase]))
 
 (deftest actuation-is-never-auto-eligible-at-any-phase

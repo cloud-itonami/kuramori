@@ -4,7 +4,7 @@
   yield NOTHING (absence of a rule is not permission), every entry must
   carry a real citation, and coverage must be reported honestly rather
   than implied."
-  (:require [clojure.test :refer [deftest testing is]]
+  (:require [kotoba.test :refer [deftest testing is]]
             [kotoba.lang.text :as str]
             [kuramori.facts :as facts]))
 

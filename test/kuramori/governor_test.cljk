@@ -7,7 +7,7 @@
 
   The constitutional gates G1-G8 in CLAUDE.md were prose before
   `kuramori.governor` existed. Each test below names the gate it pins."
-  (:require [clojure.test :refer [deftest testing is]]
+  (:require [kotoba.test :refer [deftest testing is]]
             [kuramori.governor :as governor]
             [kuramori.facts :as facts]
             [kuramori.store :as store]
