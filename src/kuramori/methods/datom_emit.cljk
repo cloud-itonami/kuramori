@@ -10,7 +10,7 @@
 ;; Pure Clojure, no deps → babashka-runnable AND kotoba-pywasm-portable.
 ;; Per ADR-2606142000 (kuramori R0).
 (ns kuramori.methods.datom-emit
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [kotoba.lang.text :as str]
             [kuramori.methods.analyze :as az]))
 

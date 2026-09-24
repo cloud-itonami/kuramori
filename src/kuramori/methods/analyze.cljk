@@ -9,7 +9,7 @@
 ;; Pure Clojure, no deps → babashka-runnable AND kotoba-pywasm-portable.
 ;; Per ADR-2606142000 (kuramori R0).
 (ns kuramori.methods.analyze
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [kuramori.methods.slotting :as slot]
             [kuramori.methods.agv-amr :as fleet]
             [kuramori.methods.picking :as pick]
