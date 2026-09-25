@@ -2,7 +2,7 @@
 ;; Run: kbb -M:dev:test
 ;; Per ADR-2606142000 (kuramori R0).
 (ns kuramori.methods-test
-  (:require [kotoba.test :refer [deftest is testing]]
+  (:require [kotoba.lang.error :as kerror] [kotoba.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]
             [kuramori.methods.agv-amr :as fleet]
             [kuramori.methods.slotting :as slot]
@@ -24,7 +24,7 @@
       (is (< (fleet/travel-time 5.0 v) (fleet/travel-time 50.0 v))))))
 
 (deftest travel-time-rejects-negative
-  (is (thrown? clojure.lang.ExceptionInfo (fleet/travel-time -1.0 (fleet/make-vehicle)))))
+  (is (thrown? kerror/ExceptionInfo (fleet/travel-time -1.0 (fleet/make-vehicle)))))
 
 (deftest trapezoidal-matches-niyaku-closed-form
   (testing "long leg = 2*t_ramp + d_cruise/v (niyaku closed form)"
@@ -70,7 +70,7 @@
           r (fleet/dispatch moves ["a" "b"] (fleet/make-vehicle :amr))]
       (is (= 3 (reduce + (map count (vals (:assignment r))))))
       (is (pos? (:makespan r)))
-      (is (thrown? clojure.lang.ExceptionInfo (fleet/dispatch moves [] (fleet/make-vehicle)))))))
+      (is (thrown? kerror/ExceptionInfo (fleet/dispatch moves [] (fleet/make-vehicle)))))))
 
 ;; ── slotting ──────────────────────────────────────────────────────────────────
 (deftest abc-classes
@@ -94,7 +94,7 @@
 
 (deftest assign-slot-raises-when-infeasible
   (testing "G7 — an infeasible putaway RAISES (never silently forced)"
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (slot/assign-slot! {:id "x" :weight-kg 999 :temp :ambient}
                                     [{:id "s" :max-kg 50 :temps #{:ambient} :dist-from-face 5}])))))
 
@@ -163,9 +163,9 @@
 
 (deftest batch-capacity-gate-raises
   (testing "G9 — an order larger than the wave cap RAISES (atomic, never split)"
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (pick/consolidate [{:id "big" :picks ["a" "b" "c" "d" "e"]}] 4)))
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (pick/assert-batch-capacity! [{:id "big" :picks ["a" "b" "c"]}] 2)))))
 
 (deftest tight-cap-one-order-per-wave
@@ -230,9 +230,9 @@
 
 (deftest cartonize-item-bigger-than-largest-raises
   (testing "a single item exceeding the LARGEST carton RAISES (unpackable; no phantom pack)"
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (pk/cartonize [{:id "huge" :vol-cm3 99999 :weight-kg 1.0}] carton-types))) ; volume over L
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (pk/cartonize [{:id "heavy" :vol-cm3 100 :weight-kg 99.0}] carton-types))))) ; weight over L
 
 (deftest cartonize-weight-vs-volume-bound-selection
@@ -273,8 +273,8 @@
 
 (deftest handoff-provenance-gate
   (testing "G10 — an orphan handoff (no source/destination) RAISES"
-    (is (thrown? clojure.lang.ExceptionInfo (ho/assert-handoff! {:id "x" :to-actor "todoke"})))
-    (is (thrown? clojure.lang.ExceptionInfo (ho/assert-handoff! {:id "x" :from-actor "kuramori"})))
+    (is (thrown? kerror/ExceptionInfo (ho/assert-handoff! {:id "x" :to-actor "todoke"})))
+    (is (thrown? kerror/ExceptionInfo (ho/assert-handoff! {:id "x" :from-actor "kuramori"})))
     (is (= "kuramori" (:from-actor (ho/assert-handoff! {:id "x" :from-actor "kuramori" :to-actor "todoke"}))))))
 
 (deftest handoff-emit-shape
@@ -321,7 +321,7 @@
 (deftest replenish-plan-hard-stockout-raises
   (testing "G — a SKU absent from all bulk RAISES (no phantom replenishment)"
     (let [slots [{:slot-id "f-x1" :sku-id "sku-ghost" :qty 0 :min 5 :max 20}]]
-      (is (thrown? clojure.lang.ExceptionInfo (rep/replenish-plan slots bulk-src))))))
+      (is (thrown? kerror/ExceptionInfo (rep/replenish-plan slots bulk-src))))))
 
 (deftest replenish-plan-fully-stocked-is-empty
   (testing "a face all at/above min yields an empty plan"
@@ -340,9 +340,9 @@
 
 (deftest disposition-missing-grade-raises
   (testing "no-blind-restock gate — an ungraded return RAISES (never silently restocked)"
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (ret/disposition {:id "x" :sku-id "s"})))
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (ret/disposition {:id "x" :sku-id "s" :condition-grade nil})))))
 
 (deftest process-returns-buckets-correctly
