@@ -22,7 +22,7 @@
   governor that re-implements the physics it is checking is checking its
   own copy, not the plan that will actually run.
 
-  The constitutional gates in `CLAUDE.md` (G1-G8) were prose until this
+  The constitutional gates in `AGENTS.md` (G1-G8) were prose until this
   namespace existed. Each HARD check below names the gate it enforces.
 
   HARD violations -- a human approver CANNOT override them:

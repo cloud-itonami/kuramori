@@ -54,7 +54,7 @@ test, and confirm the test goes red when you break the rule.
 
 ```
 kuramori/
-├── CLAUDE.md                       # this file
+├── AGENTS.md                       # this file
 ├── deps.edn                        # langgraph + langchain-store; :dev :run :test :lint
 ├── manifest.edn                    # actor manifest (5 cells, 8 gates, Clojure methods)
 ├── docs/adr/0001-…                 # why the actor layer exists; its honest limits
