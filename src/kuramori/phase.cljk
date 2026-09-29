@@ -17,7 +17,7 @@
   `:fleet/dispatch`/`:putaway/commit` are deliberately ABSENT from every
   phase's `:auto` set, including phase 3 -- a permanent structural fact,
   not a rollout milestone still to come. Releasing a dispatch plan puts
-  robots in motion on a floor humans walk (CLAUDE.md G1); committing a
+  robots in motion on a floor humans walk (AGENTS.md G1); committing a
   putaway writes the WMS book-of-record downstream picking trusts. Both
   are always a human warehouse supervisor's call.
   `kuramori.governor`'s actuation high-stakes gate enforces the same

@@ -74,6 +74,6 @@ phase `:auto` sets enforce this independently — two layers, not one.
 
 Plus `:no-spec-basis`, `:evidence-incomplete`, `:segment-conflict`,
 `:handoff-malformed`, and the `:already-dispatched` / `:already-putaway-committed`
-guards. Full text of the gates in `CLAUDE.md`; the reasoning in `docs/adr/0001`.
+guards. Full text of the gates in `AGENTS.md`; the reasoning in `docs/adr/0001`.
 
 Apache 2.0 + etzhayyim Charter Compliance Rider v3.1.

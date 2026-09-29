@@ -5,7 +5,7 @@
   that never says no, and a governor that always says no, are both
   useless, so both directions are asserted.
 
-  The constitutional gates G1-G8 in CLAUDE.md were prose before
+  The constitutional gates G1-G8 in AGENTS.md were prose before
   `kuramori.governor` existed. Each test below names the gate it pins."
   (:require [kotoba.test :refer [deftest testing is]]
             [kuramori.governor :as governor]

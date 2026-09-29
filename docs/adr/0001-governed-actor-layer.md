@@ -21,7 +21,7 @@ What it did **not** have was any of the governed-actor discipline every other
 gates (G1 design+sim only, G2 electric-only + charge gate, G3 no worker
 surveillance, G4 dividend-coupled, G5 shared-zone speed cap, G6 Murakumo-only,
 G7 hazmat segregation, G8 tazuna-teleoperable) existed **only as prose in
-`CLAUDE.md`**. Two of them (G5, G7) happened to be enforced inside the methods
+`AGENTS.md`**. Two of them (G5, G7) happened to be enforced inside the methods
 themselves; the other six were enforced by nobody.
 
 The fleet maturity scan (ADR-2608052000) read this correctly and harshly:
